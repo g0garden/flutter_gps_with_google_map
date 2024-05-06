@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
         centerTitle: true,
         title: const Text(
           '오늘도출근',
-          style: TextStyle(color: Colors.purple, fontWeight: FontWeight.bold),
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
@@ -104,60 +104,21 @@ class _HomeScreenState extends State<HomeScreen> {
           return Column(
             children: [
               Expanded(
-                flex: 2,
-                child: GoogleMap(
-                  onMapCreated: (GoogleMapController controller) {
-                    this.controller = controller;
-                  },
-                  initialCameraPosition: initialPosition,
-                  mapType: MapType.normal,
-                  myLocationEnabled: true, //현위치 표시
-                  myLocationButtonEnabled: false, //현위치가기 버튼
-                  zoomControlsEnabled: false,
-                  markers: {
-                    //출근해야하는 회사의 위치라고 생각해봐
-                    const Marker(
-                      markerId: MarkerId('123'),
-                      position: LatLng(
-                        37.5214,
-                        126.9246,
-                      ),
-                    ),
-                  },
-                  //완전 그 회사건물의 위치에 못오더라도, 반경 100m 이내면 출근 가능하게 해주자
-                  circles: {
-                    Circle(
-                      circleId: CircleId('indistance'),
-                      center: LatLng(
-                        37.5214,
-                        126.9246,
-                      ),
-                      radius: okDistance,
-                      fillColor: canWorkedIn
-                          ? Colors.blue.withOpacity(0.3)
-                          : Colors.red.withOpacity(0.3),
-                      strokeColor: canWorkedIn ? Colors.blue : Colors.red,
-                      strokeWidth: 1,
-                    )
-                  },
-                ),
-              ),
+                  flex: 2,
+                  child: _GoogleMaps(
+                    initialCarmeraLocation: initialPosition,
+                    onMapCreated: (GoogleMapController controller) {
+                      this.controller = controller;
+                    },
+                    isWorkedIn: isWorkedIn,
+                    canWorkedIn: canWorkedIn,
+                    distance: okDistance,
+                  )),
               Expanded(
-                  child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    isWorkedIn ? Icons.check : Icons.timelapse_outlined,
-                    color: isWorkedIn ? Colors.green : Colors.blue,
-                  ),
-                  SizedBox(
-                    height: 16,
-                  ),
-                  //아직 출근전이고, 출근지 100M이내이면 버튼보이게
-                  if (!isWorkedIn && canWorkedIn)
-                    OutlinedButton(
-                        onPressed: workInCheckPressed, child: Text('출근하기'))
-                ],
+                  child: _BottomWorkedInButton(
+                canWorkedIn: canWorkedIn,
+                isWorkedIn: isWorkedIn,
+                workInCheckPressed: workInCheckPressed,
               ))
             ],
           );
@@ -207,6 +168,90 @@ class _HomeScreenState extends State<HomeScreen> {
       CameraUpdate.newLatLng(
         LatLng(location.latitude, location.longitude),
       ),
+    );
+  }
+}
+
+class _GoogleMaps extends StatelessWidget {
+  final CameraPosition initialCarmeraLocation;
+  final MapCreatedCallback onMapCreated;
+  final bool canWorkedIn;
+  final bool isWorkedIn;
+  final double distance;
+
+  const _GoogleMaps(
+      {required this.initialCarmeraLocation,
+      required this.onMapCreated,
+      required this.canWorkedIn,
+      required this.isWorkedIn,
+      required this.distance,
+      super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return GoogleMap(
+      onMapCreated: onMapCreated,
+      initialCameraPosition: initialCarmeraLocation,
+      mapType: MapType.normal,
+      myLocationEnabled: true, //현위치 표시
+      myLocationButtonEnabled: false, //현위치가기 버튼
+      zoomControlsEnabled: false,
+      markers: {
+        //출근해야하는 회사의 위치라고 생각해봐
+        const Marker(
+          markerId: MarkerId('123'),
+          position: LatLng(
+            37.5214,
+            126.9246,
+          ),
+        ),
+      },
+      //완전 그 회사건물의 위치에 못오더라도, 반경 100m 이내면 출근 가능하게 해주자
+      circles: {
+        Circle(
+          circleId: CircleId('indistance'),
+          center: LatLng(
+            37.5214,
+            126.9246,
+          ),
+          radius: distance,
+          fillColor: canWorkedIn
+              ? Colors.blue.withOpacity(0.3)
+              : Colors.red.withOpacity(0.3),
+          strokeColor: canWorkedIn ? Colors.blue : Colors.red,
+          strokeWidth: 1,
+        )
+      },
+    );
+  }
+}
+
+class _BottomWorkedInButton extends StatelessWidget {
+  final bool canWorkedIn;
+  final bool isWorkedIn;
+  final VoidCallback workInCheckPressed;
+  const _BottomWorkedInButton(
+      {required this.canWorkedIn,
+      required this.isWorkedIn,
+      required this.workInCheckPressed,
+      super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          isWorkedIn ? Icons.check : Icons.timelapse_outlined,
+          color: isWorkedIn ? Colors.green : Colors.blue,
+        ),
+        SizedBox(
+          height: 16,
+        ),
+        //아직 출근전이고, 출근지 100M이내이면 버튼보이게
+        if (!isWorkedIn && canWorkedIn)
+          OutlinedButton(onPressed: workInCheckPressed, child: Text('출근하기'))
+      ],
     );
   }
 }
