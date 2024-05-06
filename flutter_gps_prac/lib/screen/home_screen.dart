@@ -79,6 +79,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   myLocationEnabled: true, //현위치 표시
                   myLocationButtonEnabled: false, //현위치가기 버튼
                   zoomControlsEnabled: false,
+                  markers: {
+                    Marker(
+                        markerId: MarkerId('123'),
+                        position: LatLng(
+                          37.5214,
+                          126.9246,
+                        ))
+                  },
                 ),
               )
             ],
