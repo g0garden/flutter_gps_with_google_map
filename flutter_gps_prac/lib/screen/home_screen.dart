@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -17,6 +18,8 @@ class _HomeScreenState extends State<HomeScreen> {
     ),
     zoom: 15, //높을수록 확대
   );
+
+  bool isWorkedIn = false;
 
   late final GoogleMapController controller;
 
@@ -70,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return Column(
             children: [
               Expanded(
+                flex: 2,
                 child: GoogleMap(
                   onMapCreated: (GoogleMapController controller) {
                     this.controller = controller;
@@ -104,12 +108,61 @@ class _HomeScreenState extends State<HomeScreen> {
                     )
                   },
                 ),
-              )
+              ),
+              Expanded(
+                  child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isWorkedIn ? Icons.check : Icons.timelapse_outlined,
+                    color: isWorkedIn ? Colors.green : Colors.blue,
+                  ),
+                  SizedBox(
+                    height: 16,
+                  ),
+                  if (!isWorkedIn)
+                    OutlinedButton(
+                        onPressed: workInCheckPressed, child: Text('출근하기'))
+                ],
+              ))
             ],
           );
         },
       ),
     );
+  }
+
+  workInCheckPressed() async {
+    final result = await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: Text('출근하기'),
+            content: Text('출근을 하시겠습니까?'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(false);
+                },
+                child: Text('취소'),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(true);
+                },
+                child: Text('출근하기'),
+                style: TextButton.styleFrom(foregroundColor: Colors.blue),
+              ),
+            ],
+          );
+        });
+
+    if (result) {
+      setState(() {
+        isWorkedIn = result;
+      });
+    }
   }
 
   myLocationPressed() async {
