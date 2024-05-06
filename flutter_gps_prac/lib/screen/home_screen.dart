@@ -80,12 +80,28 @@ class _HomeScreenState extends State<HomeScreen> {
                   myLocationButtonEnabled: false, //현위치가기 버튼
                   zoomControlsEnabled: false,
                   markers: {
-                    Marker(
-                        markerId: MarkerId('123'),
-                        position: LatLng(
-                          37.5214,
-                          126.9246,
-                        ))
+                    //출근해야하는 회사의 위치라고 생각해봐
+                    const Marker(
+                      markerId: MarkerId('123'),
+                      position: LatLng(
+                        37.5214,
+                        126.9246,
+                      ),
+                    ),
+                  },
+                  //완전 그 회사건물의 위치에 못오더라도, 반경 100m 이내면 출근 가능하게 해주자
+                  circles: {
+                    Circle(
+                      circleId: CircleId('indistance'),
+                      center: LatLng(
+                        37.5214,
+                        126.9246,
+                      ),
+                      radius: 100,
+                      fillColor: Colors.blue.withOpacity(0.3),
+                      strokeColor: Colors.blue,
+                      strokeWidth: 1,
+                    )
                   },
                 ),
               )
