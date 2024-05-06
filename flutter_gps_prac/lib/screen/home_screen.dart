@@ -19,9 +19,40 @@ class _HomeScreenState extends State<HomeScreen> {
     zoom: 15, //높을수록 확대
   );
 
-  bool isWorkedIn = false;
+  bool isWorkedIn = false; //출근했는지 여부
+  bool canWorkedIn = false; //출근가능한 거리인지 여부
+
+  final double okDistance = 100;
 
   late final GoogleMapController controller;
+
+  @override
+  initState() {
+    super.initState();
+
+    Geolocator.getPositionStream().listen((event) {
+      print(event); //latitude longtitude 받아올 수 있음
+
+      //거리계산 하기
+      final start = LatLng(
+        37.5214,
+        126.9246,
+      );
+
+      final end = LatLng(event.latitude, event.longitude);
+
+      final distance = Geolocator.distanceBetween(
+          start.latitude, start.longitude, end.latitude, end.longitude);
+
+      setState(() {
+        if (distance > okDistance) {
+          canWorkedIn = false;
+        } else {
+          canWorkedIn = true;
+        }
+      });
+    });
+  }
 
   checkPermission() async {
     //gps 확인
@@ -101,9 +132,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         37.5214,
                         126.9246,
                       ),
-                      radius: 100,
-                      fillColor: Colors.blue.withOpacity(0.3),
-                      strokeColor: Colors.blue,
+                      radius: okDistance,
+                      fillColor: canWorkedIn
+                          ? Colors.blue.withOpacity(0.3)
+                          : Colors.red.withOpacity(0.3),
+                      strokeColor: canWorkedIn ? Colors.blue : Colors.red,
                       strokeWidth: 1,
                     )
                   },
@@ -120,7 +153,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(
                     height: 16,
                   ),
-                  if (!isWorkedIn)
+                  //아직 출근전이고, 출근지 100M이내이면 버튼보이게
+                  if (!isWorkedIn && canWorkedIn)
                     OutlinedButton(
                         onPressed: workInCheckPressed, child: Text('출근하기'))
                 ],
